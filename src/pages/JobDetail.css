@@ -1,0 +1,25 @@
+.job-detail {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+.job-detail-header {
+  margin-bottom: 1rem;
+}
+.job-status {
+  margin-left: 0.5rem;
+}
+.job-tags {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+.job-tag {
+  background: #f0f0f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+.not-found {
+  text-align: center;
+}
