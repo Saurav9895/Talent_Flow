@@ -1,8 +1,8 @@
-.jobs-page {
+/* .jobs-page {
   max-width: 800px;
   margin: 0 auto;
   padding: 0 1rem;
-}
+} */
 
 .jobs-header {
   display: flex;
@@ -88,8 +88,9 @@
 }
 
 .jobs-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
   gap: 1rem;
 }
 

@@ -3,23 +3,9 @@ import JobCard from "../components/JobCard";
 import PaginationControls from "../components/PaginationControls";
 import Modal from "../components/Modal";
 import CreateJobForm from "../components/CreateJobForm";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import "./JobsPage.css";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 12;
 
 function JobsPage() {
   const [jobs, setJobs] = useState([]);
@@ -34,65 +20,6 @@ function JobsPage() {
   const [saving, setSaving] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [reorderError, setReorderError] = useState(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = async (event) => {
-    const { active, over } = event;
-
-    if (!over || String(active.id) === String(over.id)) {
-      return;
-    }
-
-    const oldIndex = jobs.findIndex(
-      (job) => String(job.id) === String(active.id)
-    );
-    const newIndex = jobs.findIndex(
-      (job) => String(job.id) === String(over.id)
-    );
-
-    if (oldIndex === -1 || newIndex === -1) {
-      return;
-    }
-
-    // Optimistically update the UI
-    const updatedJobs = arrayMove(jobs, oldIndex, newIndex);
-    const previousJobs = [...jobs];
-    setJobs(updatedJobs);
-
-    try {
-      const response = await fetch(`/api/jobs/${active.id}/reorder`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fromOrder: oldIndex,
-          toOrder: newIndex,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to reorder job");
-      }
-
-      setReorderError(null);
-    } catch (err) {
-      // Rollback on error
-      setJobs(previousJobs);
-      setReorderError("Failed to reorder job. Please try again.");
-
-      // Clear error after 3 seconds
-      setTimeout(() => {
-        setReorderError(null);
-      }, 3000);
-    }
-  };
 
   // Debounce search query
   useEffect(() => {
@@ -319,30 +246,19 @@ function JobsPage() {
           {reorderError && (
             <div className="error-message reorder-error">{reorderError}</div>
           )}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={jobs.map((job) => String(job.id))}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="jobs-list">
-                {jobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    onEdit={() => {
-                      setSelectedJob(job);
-                      setIsModalOpen(true);
-                    }}
-                    onArchiveToggle={() => handleArchiveToggle(job)}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+          <div className="jobs-list">
+            {jobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onEdit={() => {
+                  setSelectedJob(job);
+                  setIsModalOpen(true);
+                }}
+                onArchiveToggle={() => handleArchiveToggle(job)}
+              />
+            ))}
+          </div>
         </>
       )}
 

@@ -1,4 +1,11 @@
-import { db, jobs, candidates, assessments, submissions } from "./schema";
+import {
+  db,
+  jobs,
+  candidates,
+  assessments,
+  submissions,
+  timelines,
+} from "./schema";
 
 // Jobs CRUD
 export const jobsApi = {
@@ -138,6 +145,50 @@ export const submissionsApi = {
     return await submissions
       .where("assessmentId")
       .equals(assessmentId)
+      .toArray();
+  },
+};
+
+// Timelines CRUD (notes/history per candidate)
+export const timelinesApi = {
+  async getByCandidate(candidateId) {
+    return await timelines
+      .where("candidateId")
+      .equals(candidateId)
+      .sortBy("createdAt");
+  },
+
+  async add(entry) {
+    return await timelines.add(entry);
+  },
+
+  async delete(id) {
+    return await timelines.delete(id);
+  },
+};
+
+// Team members CRUD (for mentions)
+export const teamMembersApi = {
+  async getAll() {
+    return await db.table("teamMembers").toArray();
+  },
+
+  async getById(id) {
+    return await db.table("teamMembers").get(id);
+  },
+
+  async add(member) {
+    return await db.table("teamMembers").add(member);
+  },
+
+  async search(query) {
+    return await db
+      .table("teamMembers")
+      .filter(
+        (m) =>
+          m.name.toLowerCase().includes(query.toLowerCase()) ||
+          (m.email || "").toLowerCase().includes(query.toLowerCase())
+      )
       .toArray();
   },
 };

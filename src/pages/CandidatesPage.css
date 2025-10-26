@@ -1,0 +1,254 @@
+/* Layout similar to JobsPage */
+.candidates-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.candidates-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-container {
+  flex: 1;
+  max-width: 420px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.candidate-card {
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border: 1px solid #9b9b9b;
+  padding: 14px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 6px 18px rgba(18, 52, 86, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.candidate-card a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.candidate-card a:hover {
+  text-decoration: underline;
+}
+
+.loading-message,
+.error-message,
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  color: #dc3545;
+}
+
+@media (max-width: 600px) {
+  .candidates-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-container {
+    max-width: none;
+  }
+}
+
+/* .candidates-viewport {
+  width: 100%;
+  padding: 20px 0;
+} */
+
+/* Grid layout — 3 cards per row */
+.candidates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+/* Individual card styling */
+/* .candidate-card {
+  height: 110px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+} */
+
+.candidate-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.candidate-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #eaf4ff;
+  color: #0b57a4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.candidate-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.candidate-name {
+  font-weight: 700;
+  color: #102a43;
+  text-decoration: none;
+}
+
+.candidate-email {
+  font-size: 13px;
+  color: #66788a;
+}
+
+.candidate-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.candidate-stage {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  text-transform: capitalize;
+  background: #f1f7ff;
+  color: #0b57a4;
+}
+
+.view-button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #0b57a4;
+  color: white;
+  cursor: pointer;
+}
+
+/* Hover effect */
+/* .candidate-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+} */
+
+/* Responsive behavior */
+@media (max-width: 1024px) {
+  .candidates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .candidates-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+.pagination-left button + button {
+  margin-left: 8px;
+}
+
+.pagination-center {
+  color: #666;
+}
+
+.perpage-label {
+  margin-right: 8px;
+}
+
+/* Kanban board styles */
+.kanban-board {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+}
+
+.kanban-column {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 16%;
+  box-sizing: border-box;
+}
+
+.kanban-column-header {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+.kanban-column-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 100px;
+}
+.kanban-column-body.over {
+  background: rgba(0, 0, 0, 0.03);
+}

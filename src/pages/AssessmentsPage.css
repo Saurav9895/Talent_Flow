@@ -1,0 +1,169 @@
+.assessments-page {
+  padding: 2rem;
+}
+
+.assessments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.assessment-card {
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.assessment-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.assessment-title {
+  margin: 0;
+  color: #24292e;
+  font-size: 1.2rem;
+}
+
+.assessment-job {
+  color: #586069;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.assessment-meta {
+  color: #586069;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.assessment-info {
+  margin-top: 1rem;
+  color: #24292e;
+}
+
+.section-count {
+  margin-right: 1.5rem;
+}
+
+.question-count {
+  margin-right: 1.5rem;
+}
+
+.assessment-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.action-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5da;
+  border-radius: 6px;
+  background: #fafbfc;
+  cursor: pointer;
+  text-decoration: none;
+  color: #24292e;
+  font-size: 0.9rem;
+}
+
+.action-button:hover {
+  background: #f3f4f6;
+}
+
+.action-button.primary {
+  background: #2ea44f;
+  color: white;
+  border-color: #2a9147;
+}
+
+.action-button.primary:hover {
+  background: #2c974b;
+}
+
+.no-assessments {
+  text-align: center;
+  padding: 3rem;
+  background: #f6f8fa;
+  border-radius: 6px;
+  color: #586069;
+}
+
+.loading-message,
+.error-message {
+  padding: 2rem;
+  text-align: center;
+  color: #586069;
+}
+
+.error-message {
+  color: #cb2431;
+}
+
+.assessment-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-input {
+  padding: 0.5rem;
+  border: 1px solid #d1d5da;
+  border-radius: 6px;
+  min-width: 200px;
+}
+
+/* Searchable job selector styles */
+.job-selector {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+}
+
+.job-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5da;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.04);
+}
+
+.job-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  max-height: 240px;
+  overflow: auto;
+  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.08);
+  z-index: 30;
+}
+
+.job-item {
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+}
+
+.job-item:hover,
+.job-item.active {
+  background: #f6f8fa;
+}
+
+.job-selector-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.small-muted {
+  color: #6a737d;
+  font-size: 0.9rem;
+}

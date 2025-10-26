@@ -43,6 +43,7 @@ import Dexie from "dexie";
  * @property {number} assessmentId
  * @property {number} score
  * @property {string} status - 'pending' | 'completed' | 'reviewed'
+ * @property {string} stage - 'applied' | 'screening' | 'phone_screen' | 'interview' | 'offer' | 'hired' | 'rejected'
  * @property {Date} submittedAt
  */
 
@@ -54,8 +55,24 @@ class TalentFlowDB extends Dexie {
       jobs: "++id, title, company, status, postedDate",
       candidates: "++id, name, email, registrationDate",
       assessments: "++id, title, type, createdAt",
+      // include stage in submissions index so we can filter by stage
       submissions:
-        "++id, candidateId, jobId, assessmentId, status, submittedAt",
+        "++id, candidateId, jobId, assessmentId, status, submittedAt, stage",
+    });
+
+    // Add timelines table in a new version so we can store candidate timeline notes
+    this.version(2).stores({
+      timelines: "++id, candidateId, createdAt",
+    });
+
+    // Team members table (for mentions)
+    this.version(3).stores({
+      teamMembers: "++id, name, email, role",
+    });
+
+    // Add appliedJobs array to candidates table to store full job records
+    this.version(4).stores({
+      candidates: "++id, name, email, registrationDate",
     });
   }
 }
@@ -74,5 +91,11 @@ export const assessments = db.table("assessments");
 
 /** @type {Dexie.Table<Submission, number>} */
 export const submissions = db.table("submissions");
+
+/** @type {Dexie.Table<any, number>} */
+export const timelines = db.table("timelines");
+
+/** @type {Dexie.Table<any, number>} */
+export const teamMembers = db.table("teamMembers");
 
 export default db;
