@@ -19,7 +19,7 @@ function App() {
       await seedIfEmpty({
         jobCount: 15,
         candidateCount: 1000,
-        assessmentCount: 8,
+        assessmentCount: 0, // Set to 0 to prevent auto-seeding of assessments
       });
     };
 

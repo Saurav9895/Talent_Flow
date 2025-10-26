@@ -716,8 +716,17 @@ function AssessmentBuilder() {
 
         // Load existing assessment if any
         const assessmentRes = await fetch(`/api/assessments/${jobId}`);
+        console.log(
+          "Loading assessment result:",
+          await assessmentRes.clone().text()
+        );
         if (assessmentRes.ok) {
           const assessmentData = await assessmentRes.json();
+          console.log("Assessment data:", assessmentData);
+          if (!assessmentData) {
+            setError("Assessment not found");
+            return;
+          }
           // normalize older payloads: map dependsOn -> condition, ensure maxLength exists
           const normalized = (assessmentData.sections || []).map((section) => ({
             ...section,
@@ -902,10 +911,11 @@ function AssessmentBuilder() {
     setError(null);
 
     try {
+      console.log("Saving assessment:", { jobId, sections });
       const res = await fetch(`/api/assessments/${jobId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sections }),
+        body: JSON.stringify({ sections, jobId }),
       });
 
       if (!res.ok) throw new Error("Failed to save assessment");

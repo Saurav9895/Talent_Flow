@@ -47,7 +47,29 @@
 }
 
 .kanban-column-body.over {
-  background: #e9ecef;
+  background: rgba(0, 123, 255, 0.08);
+  border: 2px dashed rgba(0, 123, 255, 0.3);
+}
+
+.kanban-column .job-card.error {
+  border-color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.05);
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 /* Card styles when used in Kanban */

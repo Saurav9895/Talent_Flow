@@ -106,6 +106,13 @@ const createGetItemHandler = (path, api) => {
             (c) => c.sourceId === raw || String(c.id) === String(raw)
           );
         }
+      } else if (path === "/api/assessments") {
+        // For assessments, first try to find by job ID
+        item = await assessmentsApi.getByJobId(parseInt(params.id));
+        if (!item) {
+          // If not found by job ID, try by assessment ID
+          item = await api.getById(parseInt(params.id));
+        }
       } else {
         item = await api.getById(parseInt(params.id));
       }
@@ -543,18 +550,22 @@ const assessmentsHandlers = [
         return new HttpResponse(null, { status: 404 });
       }
 
-      // Check if assessment already exists
-      let assessment = await assessmentsApi.getById(jobId);
-      if (assessment) {
+      // Check if assessment already exists for this job
+      const allAssessments = await assessmentsApi.getAll();
+      const existingAssessment = allAssessments.find((a) => a.jobId === jobId);
+
+      let assessmentId;
+      if (existingAssessment) {
         // Update existing
-        await assessmentsApi.update(jobId, {
+        assessmentId = existingAssessment.id;
+        await assessmentsApi.update(assessmentId, {
           ...data,
           jobId,
           updatedAt: new Date().toISOString(),
         });
       } else {
-        // Create new
-        await assessmentsApi.add({
+        // Create new with a unique ID
+        assessmentId = await assessmentsApi.add({
           ...data,
           jobId,
           createdAt: new Date().toISOString(),
@@ -562,8 +573,8 @@ const assessmentsHandlers = [
         });
       }
 
-      assessment = await assessmentsApi.getById(jobId);
-      return HttpResponse.json(assessment);
+      const savedAssessment = await assessmentsApi.getById(assessmentId);
+      return HttpResponse.json(savedAssessment);
     } catch (error) {
       return errorResponse("Failed to save assessment");
     }

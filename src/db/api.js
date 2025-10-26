@@ -102,12 +102,17 @@ export const assessmentsApi = {
     return await assessments
       .filter(
         (assessment) =>
-          assessment.title.toLowerCase().includes(query.toLowerCase()) ||
-          assessment.skills.some((skill) =>
+          assessment.title?.toLowerCase().includes(query.toLowerCase()) ||
+          assessment.skills?.some((skill) =>
             skill.toLowerCase().includes(query.toLowerCase())
           )
       )
       .toArray();
+  },
+
+  async getByJobId(jobId) {
+    // Get all assessments for this job
+    return await assessments.filter((a) => a.jobId === jobId).first();
   },
 };
 

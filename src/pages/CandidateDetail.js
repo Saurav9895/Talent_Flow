@@ -37,6 +37,7 @@ function CandidateDetail() {
   const [assignedJobWithAssessment, setAssignedJobWithAssessment] =
     useState(null);
   const [submittedAssessments, setSubmittedAssessments] = useState({});
+  const [assessmentExists, setAssessmentExists] = useState({});
   const [team, setTeam] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -45,7 +46,6 @@ function CandidateDetail() {
   const [loading, setLoading] = useState(true);
   const [note, setNote] = useState("");
   const [error, setError] = useState(null);
-  const [boardStage, setBoardStage] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -64,6 +64,7 @@ function CandidateDetail() {
             ? data.assignedJobs
             : [];
           let found = null;
+
           if (assigned.length > 0) {
             for (const aj of assigned) {
               try {
@@ -88,17 +89,22 @@ function CandidateDetail() {
                     }
                   }
 
-                  // eslint-disable-next-line no-await-in-loop
-                  const jRes = await fetch(`/api/jobs/${aj}`);
-                  if (jRes.ok) {
-                    const jData = await jRes.json();
-                    if (mounted) setJob(jData);
+                  // load job details for the assigned job
+                  try {
+                    const jRes = await fetch(`/api/jobs/${aj}`);
+                    if (jRes.ok) {
+                      const jData = await jRes.json();
+                      if (mounted) setJob(jData);
+                    }
+                  } catch (e) {
+                    // ignore job fetch errors for this assigned job
                   }
+
                   if (mounted) setHasAssessment(true);
                   break;
                 }
               } catch (e) {
-                // ignore individual check errors
+                // ignore individual assigned job errors
               }
             }
           }
@@ -146,6 +152,37 @@ function CandidateDetail() {
           }
         } catch (e) {
           // ignore job fetch errors
+        }
+
+        // Check for assessments for each applied job so the Take Assessment
+        // button can be shown per-job without relying on assignedJobWithAssessment
+        try {
+          const applied = Array.isArray(data.appliedJobs)
+            ? data.appliedJobs
+            : [];
+          if (applied.length > 0) {
+            const checks = await Promise.all(
+              applied.map(async (aj) => {
+                try {
+                  const r = await fetch(`/api/assessments/${aj.id}`);
+                  return { id: aj.id, ok: r.ok };
+                } catch (err) {
+                  return { id: aj.id, ok: false };
+                }
+              })
+            );
+            if (mounted) {
+              setAssessmentExists((prev) => {
+                const next = { ...prev };
+                checks.forEach((c) => {
+                  next[String(c.id)] = c.ok;
+                });
+                return next;
+              });
+            }
+          }
+        } catch (err) {
+          // ignore per-job assessment checks
         }
 
         const tRes = await fetch(`/api/candidates/${id}/timeline`);
@@ -207,29 +244,7 @@ function CandidateDetail() {
     };
   }, [id]);
 
-  // Listen for confirmed stage changes for this candidate and refresh timeline
-  useEffect(() => {
-    const handler = async (ev) => {
-      try {
-        const d = ev.detail || {};
-        const cid = d.candidateId;
-        const confirmed = d.confirmed;
-        if (!cid || String(cid) !== String(id)) return;
-        if (!confirmed) return; // only refresh on confirmed server updates
-
-        const tRes = await fetch(`/api/candidates/${id}/timeline`);
-        if (tRes.ok) {
-          const tData = await tRes.json();
-          setTimeline(tData || []);
-        }
-      } catch (e) {
-        // ignore timeline refresh errors
-      }
-    };
-
-    window.addEventListener("candidateStageChanged", handler);
-    return () => window.removeEventListener("candidateStageChanged", handler);
-  }, [id]);
+  // Stage change events handled elsewhere; board removed
   const addEntry = async (e) => {
     e.preventDefault();
     try {
@@ -350,6 +365,31 @@ function CandidateDetail() {
 
   const latestSubmission =
     (candidate && candidate.submissions && candidate.submissions[0]) || null;
+  const [boardStage, setBoardStage] = useState(null);
+
+  // Listen for confirmed stage changes and append to timeline in the detail view
+  useEffect(() => {
+    const handler = (ev) => {
+      try {
+        const d = ev.detail || {};
+        if (!d || !d.confirmed) return;
+        if (String(d.candidateId) !== String(id)) return;
+        const entry = {
+          id: `stage-${Date.now()}`,
+          note: `Stage changed to ${d.stage}`,
+          stage: d.stage,
+          createdAt: new Date().toISOString(),
+        };
+        setTimeline((t) => [...t, entry]);
+        setBoardStage(d.stage);
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    window.addEventListener("candidateStageChanged", handler);
+    return () => window.removeEventListener("candidateStageChanged", handler);
+  }, [id]);
 
   return (
     <div className="candidate-detail">
@@ -369,11 +409,10 @@ function CandidateDetail() {
             <div className="candidate-name">{candidate.name}</div>
             <div className="candidate-email">{candidate.email}</div>
 
-            <div className="candidate-meta">
+            {/* <div className="candidate-meta">
               <strong>Current stage:</strong>{" "}
-              {/* Only show board stage to ensure consistency */}
-              {boardStage || "-"}
-            </div>
+              {latestSubmission ? latestSubmission.stage : "-"}
+            </div> */}
 
             <div className="applied-jobs-section">
               <h3>Applied Job Roles</h3>
@@ -387,9 +426,10 @@ function CandidateDetail() {
                       </div>
 
                       <div className="job-actions">
-                        {(job.id === assignedJobWithAssessment ||
-                          submittedAssessments[job.id]) &&
-                          (submittedAssessments[job.id] ? (
+                        {(Boolean(assessmentExists[String(job.id)]) ||
+                          String(job.id) ===
+                            String(assignedJobWithAssessment)) &&
+                          (Boolean(submittedAssessments[String(job.id)]) ? (
                             <>
                               <button className="action-button small" disabled>
                                 Take Assessment
@@ -429,7 +469,6 @@ function CandidateDetail() {
                 onStageChange={(s) => setBoardStage(s)}
               />
             </div>
-
             <div className="timeline-container">
               <h3>Timeline</h3>
 

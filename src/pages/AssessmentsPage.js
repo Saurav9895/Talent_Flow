@@ -51,7 +51,9 @@ function AssessmentsPage() {
         if (!jobsRes.ok) throw new Error("Failed to fetch jobs");
 
         const assessmentsData = await assessmentsRes.json();
+        console.log("Assessments data:", assessmentsData);
         const jobsData = await jobsRes.json();
+        console.log("Jobs data:", jobsData);
 
         // Convert jobs array to a map for easy lookup
         const jobsMap = jobsData.items.reduce((acc, job) => {
@@ -111,8 +113,7 @@ function AssessmentsPage() {
           <button
             className="action-button primary"
             onClick={() => {
-              // Open add panel with no default selection. Do NOT open dropdown here;
-              // dropdown should open only when the user clicks the search box.
+              // Open the add panel so the user can select which job to create an assessment for
               setShowAdd(true);
               setSelectedJob(null);
               setJobQuery("");
@@ -250,18 +251,6 @@ function AssessmentsPage() {
       {filteredAssessments.length === 0 && (
         <div className="no-assessments">
           <p>No assessments found.</p>
-          {jobs.length > 0 && <p>Select a job to create its assessment:</p>}
-          <div className="assessment-actions">
-            {jobs.map((job) => (
-              <Link
-                key={job.id}
-                to={`/assessments/${job.id}/edit`}
-                className="action-button"
-              >
-                Create for {job.title}
-              </Link>
-            ))}
-          </div>
         </div>
       )}
 

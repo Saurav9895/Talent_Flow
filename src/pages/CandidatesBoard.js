@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -8,24 +8,18 @@ import {
   useDraggable,
   DragOverlay,
 } from "@dnd-kit/core";
-import "./CandidatesPage.css";
-import "../components/JobCard.css";
 import "../components/KanbanBoard.css";
+import "../components/JobCard.css";
 
 const STAGES = ["applied", "screen", "tech", "offer", "hired", "rejected"];
 
 function DraggableCard({ candidate }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: String(candidate.id),
-      data: { candidate },
-    });
+    useDraggable({ id: String(candidate.id), data: { candidate } });
 
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        cursor: "grabbing",
-        opacity: isDragging ? "0.5" : "1",
       }
     : undefined;
 
@@ -34,6 +28,7 @@ function DraggableCard({ candidate }) {
       ref={setNodeRef}
       className={`job-card ${isDragging ? "dragging" : ""}`}
       style={style}
+      data-candidate-id={candidate.id}
       {...attributes}
       {...listeners}
     >
@@ -49,7 +44,7 @@ function DraggableCard({ candidate }) {
   );
 }
 
-function DroppableColumn({ id, children, label }) {
+function DroppableColumn({ id, label, children }) {
   const { isOver, setNodeRef } = useDroppable({ id });
   return (
     <div className="kanban-column" ref={setNodeRef}>
@@ -61,217 +56,251 @@ function DroppableColumn({ id, children, label }) {
   );
 }
 
-function CandidatesBoard({ candidateId = null, onStageChange = null }) {
-  const [columns, setColumns] = useState({});
+export default function CandidatesBoard({
+  candidateId = null,
+  onStageChange = null,
+}) {
+  const [columns, setColumns] = useState(() => {
+    const c = {};
+    STAGES.forEach((s) => (c[s] = []));
+    return c;
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [lastUpdated, setLastUpdated] = useState(0);
-  const [activeId, setActiveId] = useState(null);
   const [activeDragData, setActiveDragData] = useState(null);
-  const [pendingUpdates, setPendingUpdates] = useState(new Map()); // Track pending stage updates
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3,
-        delay: 0,
-      },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  // Method to update a candidate's stage (PATCH /candidates/:id)
-  const updateCandidateStage = async (candidateId, newStage) => {
-    try {
-      const res = await fetch(`/api/candidates/${candidateId}/stage`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage: newStage }),
-      });
-
-      if (!res.ok) {
-        let errMsg = `Failed to update stage (${res.status})`;
-        try {
-          const body = await res.json();
-          if (body && body.error) errMsg = body.error;
-        } catch (e) {
-          // ignore parse errors
-        }
-        throw new Error(errMsg);
-      }
-
-      const data = await res.json();
-      if (!data || !data.stage) {
-        throw new Error("Invalid response from server");
-      }
-
-      return data;
-    } catch (err) {
-      console.error("Stage update error:", err);
-      throw err;
-    }
-  };
-
-  const loadDataWithPending = React.useCallback(async () => {
+  const loadCandidates = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await fetch(`/api/candidates?limit=1000`);
-      const data = await res.json();
-      const items = data.items || [];
+      if (!res.ok) throw new Error(`Failed to load candidates (${res.status})`);
+      const contentType = res.headers.get("content-type") || "";
+      let body = null;
+      if (contentType.includes("application/json")) body = await res.json();
+      else throw new Error("Invalid content-type from server");
+
+      const items = Array.isArray(body.items) ? body.items : body.items || body;
       const cols = {};
       STAGES.forEach((s) => (cols[s] = []));
-      const filtered = candidateId
-        ? items.filter((it) => String(it.id) === String(candidateId))
-        : items;
 
-      filtered.forEach((c) => {
-        // Get stage from pending updates first
-        const pendingStage = pendingUpdates.get(String(c.id));
-        let stage = "applied"; // Default stage
+      (items || []).forEach((c) => {
+        // determine stage: prefer candidate.stage, then latest submission
+        let stage =
+          c.stage ||
+          (c.submissions && c.submissions[0] && c.submissions[0].stage) ||
+          "applied";
+        if (!STAGES.includes(stage)) stage = "applied";
+        cols[stage].push(c);
+      });
 
-        if (pendingStage) {
-          stage = pendingStage;
-        } else if (
-          c.submissions &&
-          Array.isArray(c.submissions) &&
-          c.submissions.length > 0
-        ) {
-          // Get stage from most recent submission
-          const lastSubmission = [...c.submissions].sort(
-            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-          )[0];
-          stage = lastSubmission.stage;
+      setColumns(cols);
+      setError(null);
+
+      // If a candidateId was provided, notify parent of its current stage
+      if (candidateId && typeof onStageChange === "function") {
+        let foundStage = null;
+        for (const s of STAGES) {
+          if (
+            (cols[s] || []).some((c) => String(c.id) === String(candidateId))
+          ) {
+            foundStage = s;
+            break;
+          }
         }
-
-        // Ensure stage is valid
-        const stageKey = STAGES.includes(stage) ? stage : "applied";
-        cols[stageKey].push(c);
-      });
-
-      // Only update if there are actual changes
-      const hasChanges = STAGES.some((stage) => {
-        const currentCol = columns[stage] || [];
-        const newCol = cols[stage] || [];
-        return (
-          currentCol.length !== newCol.length ||
-          newCol.some(
-            (c, i) =>
-              currentCol[i]?.id !== c.id ||
-              currentCol[i]?.submissions?.[0]?.stage !==
-                c.submissions?.[0]?.stage
-          )
-        );
-      });
-
-      if (hasChanges) {
-        setColumns(cols);
-        setLastUpdated(Date.now());
+        try {
+          onStageChange(foundStage);
+        } catch (e) {
+          // ignore callback errors
+        }
       }
     } catch (err) {
       setError(String(err));
     } finally {
       setLoading(false);
     }
-  }, [candidateId, pendingUpdates, columns]);
+  }, [candidateId, onStageChange]);
 
-  // Initial load
   useEffect(() => {
-    setLoading(true);
-    loadDataWithPending();
-  }, [loadDataWithPending]);
+    loadCandidates();
+  }, [loadCandidates]);
 
-  // Whenever columns change, if a candidateId prop was provided, report
-  // which column/stage the candidate is currently in via onStageChange
-  useEffect(() => {
-    if (!candidateId || typeof onStageChange !== "function") return;
+  const onDragStart = ({ active }) => {
+    const id = String(active.id);
+    // find candidate
     for (const s of STAGES) {
-      const candidate = (columns[s] || []).find(
-        (c) => String(c.id) === String(candidateId)
-      );
-      if (candidate) {
-        try {
-          onStageChange(s);
-        } catch (e) {
-          // swallow callback errors
-        }
-        return;
-      }
-    }
-    // not found
-    try {
-      onStageChange(null);
-    } catch (e) {
-      // ignore
-    }
-  }, [columns, candidateId, onStageChange]);
-
-  // Setup polling with a longer interval and skip if there are pending updates
-  useEffect(() => {
-    if (pendingUpdates.size > 0) {
-      return; // Skip polling if there are pending updates
-    }
-
-    const intervalId = setInterval(() => {
-      loadDataWithPending();
-    }, 10000); // Poll every 10 seconds instead of 5
-
-    return () => clearInterval(intervalId);
-  }, [loadDataWithPending, pendingUpdates]);
-
-  const handleDragStart = (event) => {
-    const { active } = event;
-    setActiveId(active.id);
-
-    for (const stage of STAGES) {
-      const candidate = columns[stage]?.find(
-        (c) => String(c.id) === String(active.id)
-      );
-      if (candidate) {
-        setActiveDragData(candidate);
+      const found = columns[s]?.find((c) => String(c.id) === id);
+      if (found) {
+        setActiveDragData(found);
         break;
       }
     }
   };
 
-  const onDragEnd = async (event) => {
-    const { active, over } = event;
-    if (!over) {
-      setActiveId(null);
-      setActiveDragData(null);
-      return;
-    }
-
-    const candidateId = String(active.id);
-    const newStage = String(over.id);
-
-    // Find the candidate and their current stage
-    let sourceStage = null;
-    let movingCandidate = null;
+  const getStageForCandidate = (id) => {
     for (const s of STAGES) {
-      const candidate = columns[s]?.find((c) => String(c.id) === candidateId);
-      if (candidate) {
-        sourceStage = s;
-        movingCandidate = candidate;
-        break;
+      if ((columns[s] || []).some((c) => String(c.id) === String(id))) return s;
+    }
+    return null;
+  };
+
+  const postTimelineEntry = async (candidateId, stage) => {
+    try {
+      const payload = { note: `Stage changed to ${stage}`, stage };
+      const res = await fetch(`/api/candidates/${candidateId}/timeline`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) return null;
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) return await res.json();
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const changeStage = async (newStage) => {
+    if (!candidateId) return;
+    const candidateIdStr = String(candidateId);
+    const sourceStage = getStageForCandidate(candidateIdStr);
+    if (!sourceStage || sourceStage === newStage) return;
+
+    const previous = JSON.parse(JSON.stringify(columns));
+
+    // optimistic move
+    setColumns((cur) => {
+      const next = {};
+      STAGES.forEach((s) => (next[s] = [...(cur[s] || [])]));
+      next[sourceStage] = next[sourceStage].filter(
+        (c) => String(c.id) !== candidateIdStr
+      );
+      const moving = (cur[sourceStage] || []).find(
+        (c) => String(c.id) === candidateIdStr
+      );
+      if (moving) {
+        next[newStage] = [...next[newStage], { ...moving, stage: newStage }];
       }
-    }
-
-    // Validate the drag operation
-    if (!movingCandidate || sourceStage === newStage) {
-      setActiveId(null);
-      setActiveDragData(null);
-      return;
-    }
-
-    setActiveId(null);
-    setActiveDragData(null);
-
-    // Optimistic update: mark pending and move candidate locally
-    setPendingUpdates((prev) => {
-      const next = new Map(prev);
-      next.set(candidateId, newStage);
       return next;
     });
 
-    // Dispatch an optimistic stage change event so other parts of the UI can update immediately
+    try {
+      // optimistic event
+      try {
+        window.dispatchEvent(
+          new CustomEvent("candidateStageChanged", {
+            detail: {
+              candidateId: candidateIdStr,
+              stage: newStage,
+              confirmed: false,
+            },
+          })
+        );
+      } catch (e) {}
+
+      await updateStageOnServer(candidateIdStr, newStage);
+
+      try {
+        window.dispatchEvent(
+          new CustomEvent("candidateStageChanged", {
+            detail: {
+              candidateId: candidateIdStr,
+              stage: newStage,
+              confirmed: true,
+            },
+          })
+        );
+      } catch (e) {}
+
+      if (typeof onStageChange === "function") {
+        try {
+          onStageChange(newStage);
+        } catch (e) {}
+      }
+    } catch (err) {
+      setColumns(previous);
+      setError(String(err));
+      setTimeout(() => setError(null), 4000);
+    }
+  };
+
+  const updateStageOnServer = async (candidateId, newStage) => {
+    const res = await fetch(`/api/candidates/${candidateId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stage: newStage }),
+    });
+
+    if (!res.ok) {
+      // attempt to read error message
+      let msg = `Server returned ${res.status}`;
+      try {
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          const j = await res.json();
+          if (j && j.error) msg = j.error;
+        } else {
+          const t = await res.text();
+          if (t) msg = t.slice(0, 200);
+        }
+      } catch (e) {
+        // ignore
+      }
+      throw new Error(msg);
+    }
+
+    // if JSON returned, return it; otherwise return null
+    try {
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) return await res.json();
+    } catch (e) {
+      // ignore parse error
+    }
+    return null;
+  };
+
+  const onDragEnd = async ({ active, over }) => {
+    setActiveDragData(null);
+    if (!active || !over) return;
+    const candidateId = String(active.id);
+    const newStage = String(over.id);
+    if (!STAGES.includes(newStage)) return;
+
+    // find source stage
+    let sourceStage = null;
+    for (const s of STAGES) {
+      if ((columns[s] || []).some((c) => String(c.id) === candidateId)) {
+        sourceStage = s;
+        break;
+      }
+    }
+    if (!sourceStage || sourceStage === newStage) return;
+
+    // optimistic update
+    const previous = JSON.parse(JSON.stringify(columns));
+    setColumns((cur) => {
+      const next = {};
+      STAGES.forEach((s) => (next[s] = [...(cur[s] || [])]));
+      // remove from source
+      next[sourceStage] = next[sourceStage].filter(
+        (c) => String(c.id) !== candidateId
+      );
+      // move to target (append)
+      const moving = (cur[sourceStage] || []).find(
+        (c) => String(c.id) === candidateId
+      );
+      if (moving) {
+        const moved = { ...moving, stage: newStage };
+        next[newStage] = [...next[newStage], moved];
+      }
+      return next;
+    });
+
+    // emit optimistic event
     try {
       window.dispatchEvent(
         new CustomEvent("candidateStageChanged", {
@@ -279,68 +308,13 @@ function CandidatesBoard({ candidateId = null, onStageChange = null }) {
         })
       );
     } catch (e) {
-      // ignore if window isn't available (e.g., server-side)
+      // ignore
     }
 
-    const previousColumns = JSON.parse(JSON.stringify(columns));
-
-    setColumns((current) => {
-      const updated = { ...current };
-      updated[sourceStage] = current[sourceStage].filter(
-        (c) => String(c.id) !== candidateId
-      );
-      updated[newStage] = [
-        ...current[newStage],
-        {
-          ...movingCandidate,
-          submissions: [{ ...movingCandidate.submissions[0], stage: newStage }],
-        },
-      ];
-      return updated;
-    });
-
     try {
-      const result = await updateCandidateStage(candidateId, newStage);
+      await updateStageOnServer(candidateId, newStage);
 
-      if (!result) {
-        throw new Error("No response from server");
-      }
-
-      // Update local state with the result
-      setColumns((current) => {
-        const updated = { ...current };
-        // Remove from old column
-        if (sourceStage) {
-          updated[sourceStage] = current[sourceStage].filter(
-            (c) => String(c.id) !== candidateId
-          );
-        }
-        // Add to new column with updated submission
-        updated[newStage] = [
-          ...current[newStage],
-          {
-            ...movingCandidate,
-            submissions: [
-              {
-                ...movingCandidate.submissions[0],
-                stage: newStage,
-                updatedAt: new Date().toISOString(),
-              },
-            ],
-          },
-        ];
-        return updated;
-      });
-
-      // Success: remove pending marker
-      setPendingUpdates((prev) => {
-        const next = new Map(prev);
-        next.delete(candidateId);
-        return next;
-      });
-
-      // Broadcast confirmed stage change so other UI parts (cards, detail/timeline)
-      // can refresh in response to a server-confirmed update.
+      // confirmed: emit confirmed event
       try {
         window.dispatchEvent(
           new CustomEvent("candidateStageChanged", {
@@ -348,23 +322,27 @@ function CandidatesBoard({ candidateId = null, onStageChange = null }) {
           })
         );
       } catch (e) {
-        // ignore (e.g., server-side rendering)
+        // ignore
+      }
+      // notify parent callback, if provided
+      if (typeof onStageChange === "function") {
+        try {
+          onStageChange(newStage);
+        } catch (e) {
+          // ignore
+        }
       }
 
-      // Schedule a delayed refresh to ensure consistency
-      setTimeout(() => {
-        loadDataWithPending();
-      }, 2000);
+      // add timeline entry on server (best-effort)
+      try {
+        postTimelineEntry(candidateId, newStage);
+      } catch (e) {
+        // ignore timeline errors
+      }
     } catch (err) {
       // rollback
-      console.error("Error updating candidate stage:", err);
-      setColumns(previousColumns);
-      setPendingUpdates((prev) => {
-        const next = new Map(prev);
-        next.delete(candidateId);
-        return next;
-      });
-      setError(`Failed to update candidate stage: ${err.message}`);
+      setColumns(previous);
+      setError(String(err));
       setTimeout(() => setError(null), 4000);
     }
   };
@@ -372,61 +350,43 @@ function CandidatesBoard({ candidateId = null, onStageChange = null }) {
   if (loading)
     return (
       <div className="loading-message">
-        <div className="loading-spinner"></div>
+        <div className="loading-spinner" />
         <div>Loading board...</div>
       </div>
     );
 
   return (
-    <div className="jobs-page">
-      {/* <h2>Candidates Board</h2> */}
+    <div className="kanban-board">
       {error && <div className="error-message">{error}</div>}
       <DndContext
         sensors={sensors}
-        onDragStart={handleDragStart}
+        onDragStart={onDragStart}
         onDragEnd={onDragEnd}
-        onDragCancel={() => {
-          setActiveId(null);
-          setActiveDragData(null);
-        }}
-        /* no modifiers configured to keep the dependency surface small */
-        accessibility={{
-          announcements: {
-            onDragStart: ({ active }) => `Picked up candidate`,
-            onDragOver: ({ active, over }) =>
-              over
-                ? `Moving candidate to ${over.id} column`
-                : `Moving candidate`,
-            onDragEnd: ({ active, over }) =>
-              over
-                ? `Placed candidate in ${over.id} column`
-                : `Dropped candidate`,
-          },
-        }}
+        onDragCancel={() => setActiveDragData(null)}
       >
-        <div className="kanban-board">
-          {/* Render columns with 2 per row */}
-          {(() => {
-            const perRow = 2;
-            const rows = Math.ceil(STAGES.length / perRow);
-            return Array.from({ length: rows }).map((_, rowIndex) => (
-              <div key={rowIndex} className="kanban-row">
-                {STAGES.slice(rowIndex * perRow, (rowIndex + 1) * perRow).map(
-                  (s) => (
-                    <DroppableColumn key={s} id={s} label={s}>
-                      {columns[s] &&
-                        columns[s].map((c) =>
-                          activeId === String(c.id) ? null : (
+        {(() => {
+          const perRow = 2;
+          const rows = Math.ceil(STAGES.length / perRow);
+          return Array.from({ length: rows }).map((_, rowIndex) => (
+            <div key={rowIndex} className="kanban-row">
+              {STAGES.slice(rowIndex * perRow, (rowIndex + 1) * perRow).map(
+                (s) => (
+                  <DroppableColumn key={s} id={s} label={s}>
+                    {candidateId
+                      ? (columns[s] || [])
+                          .filter((c) => String(c.id) === String(candidateId))
+                          .map((c) => (
                             <DraggableCard key={c.id} candidate={c} />
-                          )
-                        )}
-                    </DroppableColumn>
-                  )
-                )}
-              </div>
-            ));
-          })()}
-        </div>
+                          ))
+                      : (columns[s] || []).map((c) => (
+                          <DraggableCard key={c.id} candidate={c} />
+                        ))}
+                  </DroppableColumn>
+                )
+              )}
+            </div>
+          ));
+        })()}
 
         <DragOverlay>
           {activeDragData ? (
@@ -446,5 +406,3 @@ function CandidatesBoard({ candidateId = null, onStageChange = null }) {
     </div>
   );
 }
-
-export default CandidatesBoard;
