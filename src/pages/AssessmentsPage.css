@@ -1,124 +1,172 @@
 .assessments-page {
-  padding: 2rem;
+  padding: 32px;
+  background-color: #f5f9ff;
+
+  height: 83vh;
+  overflow-y: auto;
 }
 
+/* Header */
 .assessments-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
 }
 
+.assessments-header h1 {
+  font-size: 28px;
+  color: #0b57a4;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Buttons */
+.action-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Default Button */
+.action-button {
+  background: #e3f2fd;
+  color: #0b57a4;
+  font-weight: 500;
+}
+
+.action-button:hover {
+  background: #bbdefb;
+  transform: scale(1.04);
+}
+
+/* Primary Button */
+.action-button.primary {
+  background: linear-gradient(90deg, #0b57a4, #1565c0);
+  color: #fff;
+  font-weight: 500;
+}
+
+.action-button.primary:hover {
+  background: linear-gradient(90deg, #083b7a, #0b57a4);
+}
+
+/* Assessment Filters */
+.assessment-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.filter-input {
+  padding: 10px 12px;
+  border: 1px solid #d3e3ff;
+  border-radius: 8px;
+  min-width: 240px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.filter-input:focus {
+  border-color: #0b57a4;
+}
+
+/* Assessment Card */
 .assessment-card {
-  background: #fff;
-  border: 1px solid #e1e4e8;
-  border-radius: 6px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
+  background: #ffffff;
+  border: 1px solid #e1e8f0;
+  border-left: 5px solid #1e88e5;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 6px rgba(30, 136, 229, 0.08);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
 }
 
+.assessment-card:hover {
+  box-shadow: 0 4px 14px rgba(30, 136, 229, 0.18);
+  transform: translateY(-3px);
+}
+
+/* Card Header */
 .assessment-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .assessment-title {
   margin: 0;
-  color: #24292e;
-  font-size: 1.2rem;
-}
-
-.assessment-job {
-  color: #586069;
-  font-size: 0.9rem;
-  margin-top: 0.25rem;
+  font-size: 20px;
+  font-weight: 600;
+  color: #0b57a4;
 }
 
 .assessment-meta {
-  color: #586069;
-  font-size: 0.9rem;
-  margin-top: 1rem;
+  color: #5e6c84;
+  font-size: 14px;
+  margin-top: 8px;
 }
 
+/* Info Section */
 .assessment-info {
-  margin-top: 1rem;
-  color: #24292e;
+  margin-top: 12px;
+  color: #1f2937;
+  font-size: 15px;
+  display: flex;
+  gap: 24px;
 }
 
-.section-count {
-  margin-right: 1.5rem;
-}
-
+.section-count,
 .question-count {
-  margin-right: 1.5rem;
+  color: #0b57a4;
+  font-weight: 500;
 }
 
+/* Actions */
 .assessment-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
 }
 
-.action-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5da;
-  border-radius: 6px;
-  background: #fafbfc;
-  cursor: pointer;
-  text-decoration: none;
-  color: #24292e;
-  font-size: 0.9rem;
+/* Add Assessment Section */
+.section-card {
+  background: #fff;
+  border: 1px solid #d3e3ff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 16px rgba(11, 87, 164, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.action-button:hover {
-  background: #f3f4f6;
+.section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(11, 87, 164, 0.12);
 }
 
-.action-button.primary {
-  background: #2ea44f;
-  color: white;
-  border-color: #2a9147;
-}
-
-.action-button.primary:hover {
-  background: #2c974b;
-}
-
-.no-assessments {
-  text-align: center;
-  padding: 3rem;
-  background: #f6f8fa;
-  border-radius: 6px;
-  color: #586069;
-}
-
-.loading-message,
-.error-message {
-  padding: 2rem;
-  text-align: center;
-  color: #586069;
-}
-
-.error-message {
-  color: #cb2431;
-}
-
-.assessment-filters {
+.section-header {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
-.filter-input {
-  padding: 0.5rem;
-  border: 1px solid #d1d5da;
-  border-radius: 6px;
-  min-width: 200px;
-}
-
-/* Searchable job selector styles */
+/* Job Selector */
 .job-selector {
   position: relative;
   width: 100%;
@@ -127,10 +175,16 @@
 
 .job-input {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid #d1d5da;
+  padding: 10px 12px;
+  border: 1px solid #d3e3ff;
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.04);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.job-input:focus {
+  border-color: #0b57a4;
 }
 
 .job-dropdown {
@@ -138,32 +192,79 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #e1e4e8;
-  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #d3e3ff;
+  border-radius: 10px;
   max-height: 240px;
-  overflow: auto;
-  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.08);
-  z-index: 30;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(11, 87, 164, 0.1);
+  z-index: 50;
 }
 
 .job-item {
-  padding: 0.6rem 0.75rem;
+  padding: 10px 12px;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .job-item:hover,
 .job-item.active {
-  background: #f6f8fa;
+  background: #f0f7ff;
 }
 
-.job-selector-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+.job-item div:first-child {
+  font-weight: 600;
+  color: #0b57a4;
 }
 
 .small-muted {
-  color: #6a737d;
-  font-size: 0.9rem;
+  color: #5e6c84;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* Empty State */
+.no-assessments {
+  text-align: center;
+  padding: 40px;
+  background: #f8fbff;
+  border-radius: 12px;
+  color: #5e6c84;
+  font-size: 15px;
+  border: 1px dashed #d3e3ff;
+}
+
+/* Messages */
+.loading-message,
+.error-message {
+  text-align: center;
+  padding: 32px;
+  font-size: 15px;
+}
+
+.loading-message {
+  color: #0b57a4;
+}
+
+.error-message {
+  color: #d32f2f;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .assessments-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .assessment-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .assessment-info {
+    flex-direction: column;
+    gap: 8px;
+  }
 }

@@ -1,15 +1,21 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background-color: #f5f9ff;
+}
 .App {
-  min-height: 100vh;
+  /* min-height: 100vh; */
   display: flex;
   flex-direction: column;
 }
 
 .app-main {
   flex: 1;
-  max-width: 1200px;
-  margin: 40px auto;
-  padding: 2rem 1rem;
-  width: 100%;
+  max-width: 100%;
+  padding: 50px 0 0 0;
 }
 
 .page {

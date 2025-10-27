@@ -1,5 +1,5 @@
 .app-header {
-  background-color: #ffffff;
+  background: linear-gradient(135deg, #1565c0, #0d47a1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 1rem 0;
   width: 100%;
@@ -21,7 +21,7 @@
   font-size: 1.5rem;
   font-weight: bold;
   text-decoration: none;
-  color: #333;
+  color: #ffffff;
 }
 
 .main-nav {
@@ -31,11 +31,11 @@
 
 .main-nav a {
   text-decoration: none;
-  color: #666;
+  color: #ffffff;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .main-nav a:hover {
-  color: #333;
+  color: #fafafa;
 }

@@ -1,9 +1,14 @@
-/* .jobs-page {
-  max-width: 800px;
+.jobs-page {
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 1rem;
-} */
+  padding: 2rem 1.5rem;
+  background-color: #f9fbfe;
+  height: 83vh;
+  overflow-y: auto;
+  color: #0d274d;
+}
 
+/* Header Section */
 .jobs-header {
   display: flex;
   justify-content: space-between;
@@ -11,6 +16,8 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e3f2fd;
 }
 
 .header-left,
@@ -20,11 +27,41 @@
   gap: 1rem;
 }
 
-.header-right {
-  flex: 1;
-  justify-content: flex-end;
+.header-left h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0d47a1;
+  margin: 0;
 }
 
+/* Create Job Button */
+.create-button {
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 3px 6px rgba(30, 136, 229, 0.25);
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #1565c0, #0d47a1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(30, 136, 229, 0.35);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Filter */
 .filter-container {
   display: flex;
   align-items: center;
@@ -35,84 +72,116 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #666;
+  color: #394e76;
   cursor: pointer;
+  background: #eef5fb;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #d4e4f7;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #e3f2fd;
+  }
 }
 
 .archive-filter input[type="checkbox"] {
+  accent-color: #1e88e5;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
   margin: 0;
-  cursor: pointer;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.create-button {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.create-button:hover {
-  background-color: #218838;
-}
-
+/* Search Bar */
 .search-container {
   flex: 1;
-  max-width: 400px;
+  max-width: 350px;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  border: 1px solid #c5d9f3;
+  border-radius: 8px;
   font-size: 0.95rem;
-  transition: border-color 0.2s;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(30, 136, 229, 0.05);
+  transition: all 0.25s;
+
+  &:focus {
+    outline: none;
+    border-color: #1e88e5;
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15);
+  }
+
+  &::placeholder {
+    color: #9aaac7;
+  }
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
+/* Jobs List */
 .jobs-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Messages */
 .loading-message,
 .error-message,
 .no-results {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: #5a6b8a;
+  font-size: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e0e7f1;
+  box-shadow: 0 2px 6px rgba(30, 136, 229, 0.05);
 }
 
 .error-message {
-  color: #dc3545;
+  color: #c62828;
+  border-left: 4px solid #e53935;
 }
 
-@media (max-width: 600px) {
+/* Pagination */
+.pagination-controls {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
   .jobs-header {
     flex-direction: column;
     align-items: stretch;
+    text-align: center;
+  }
+
+  .header-right {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.75rem;
   }
 
   .search-container {
-    max-width: none;
+    max-width: 100%;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

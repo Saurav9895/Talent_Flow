@@ -307,12 +307,7 @@ const QuestionComponent = ({
   const ValidationControls = () => (
     <div
       className="validation-controls"
-      style={{
-        marginTop: 12,
-        padding: 8,
-        backgroundColor: "#f6f8fa",
-        borderRadius: 4,
-      }}
+      
     >
       <div>
         <label style={{ marginRight: 16 }}>
@@ -956,7 +951,7 @@ function AssessmentBuilder() {
           {sections.map((section) => (
             <div key={section.id} className="section-card">
               <div className="section-header">
-                <div>
+                <div className="section-header-content">
                   <input
                     type="text"
                     value={section.title}
@@ -974,12 +969,6 @@ function AssessmentBuilder() {
                     placeholder="Section Description"
                   />
                 </div>
-                <button
-                  className="danger"
-                  onClick={() => deleteSection(section.id)}
-                >
-                  Delete Section
-                </button>
               </div>
 
               {section.questions.map((question) => (
@@ -1026,6 +1015,12 @@ function AssessmentBuilder() {
                   </option>
                 </select>
               </div>
+              <button
+                className="danger delete-btn"
+                onClick={() => deleteSection(section.id)}
+              >
+                Delete Section
+              </button>
             </div>
           ))}
 
