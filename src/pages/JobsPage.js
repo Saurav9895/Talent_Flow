@@ -88,6 +88,14 @@ function JobsPage() {
       const url = isEditing ? `/api/jobs/${selectedJob.id}` : "/api/jobs";
       const method = isEditing ? "PATCH" : "POST";
 
+      // Add validation before saving
+      if (!jobData.title?.trim()) {
+        throw new Error("Job title is required");
+      }
+      if (!jobData.company?.trim()) {
+        throw new Error("Company name is required");
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -103,7 +111,18 @@ function JobsPage() {
         );
       }
 
-      const savedJob = await response.json();
+      let savedJob;
+      try {
+        savedJob = await response.json();
+      } catch (err) {
+        console.error("Failed to parse response:", err);
+        throw new Error("Invalid response from server");
+      }
+
+      // Validate the saved job data
+      if (!savedJob || !savedJob.id) {
+        throw new Error("Invalid job data received from server");
+      }
 
       // Update jobs list optimistically
       setJobs((currentJobs) => {
@@ -112,7 +131,11 @@ function JobsPage() {
             job.id === savedJob.id ? savedJob : job
           );
         }
-        return [savedJob, ...currentJobs].slice(0, ITEMS_PER_PAGE);
+        const newJobs = [savedJob, ...currentJobs].slice(0, ITEMS_PER_PAGE);
+        // Ensure no duplicates
+        return newJobs.filter(
+          (job, index, self) => index === self.findIndex((j) => j.id === job.id)
+        );
       });
 
       setIsModalOpen(false);

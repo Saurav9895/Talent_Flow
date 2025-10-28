@@ -7,6 +7,8 @@ import {
   timelines,
 } from "./schema";
 import { seedDatabase } from "./seeds";
+import { WriteError } from "./errors";
+import { retryOperation } from "./errors";
 
 // Jobs CRUD
 export const jobsApi = {
@@ -19,11 +21,48 @@ export const jobsApi = {
   },
 
   async add(job) {
-    return await jobs.add(job);
+    try {
+      return await db.transaction("rw", jobs, async () => {
+        return await retryOperation(async () => {
+          // Add createdAt and updatedAt timestamps
+          const jobWithTimestamps = {
+            ...job,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          const id = await jobs.add(jobWithTimestamps);
+          // Return the complete job object
+          return await jobs.get(id);
+        });
+      });
+    } catch (error) {
+      throw new WriteError("Failed to create job", "add", error);
+    }
   },
 
   async update(id, changes) {
-    return await jobs.update(id, changes);
+    try {
+      return await db.transaction("rw", jobs, async () => {
+        return await retryOperation(async () => {
+          const existing = await jobs.get(id);
+          if (!existing) {
+            throw new Error(`Job with id ${id} not found`);
+          }
+
+          const updatedJob = {
+            ...existing,
+            ...changes,
+            updatedAt: new Date().toISOString(),
+          };
+
+          await jobs.put(updatedJob);
+          return updatedJob;
+        });
+      });
+    } catch (error) {
+      throw new WriteError("Failed to update job", "update", error);
+    }
   },
 
   async delete(id) {
