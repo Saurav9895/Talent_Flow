@@ -6,6 +6,7 @@ import {
   submissions,
   timelines,
 } from "./schema";
+import { seedDatabase } from "./seeds";
 
 // Jobs CRUD
 export const jobsApi = {
@@ -170,6 +171,17 @@ export const timelinesApi = {
   async delete(id) {
     return await timelines.delete(id);
   },
+};
+
+// Database seeding utility
+export const seedData = async () => {
+  try {
+    await seedDatabase();
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to seed database:", error);
+    return { success: false, error };
+  }
 };
 
 // Team members CRUD (for mentions)

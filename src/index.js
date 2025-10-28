@@ -5,12 +5,20 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
 async function enableMocking() {
-  if (process.env.NODE_ENV !== "development") {
-    return;
-  }
-
+  // Enable MSW in all environments for consistent behavior
   const { worker } = await import("./mocks/browser");
-  return worker.start();
+
+  // Initialize the worker
+  await worker.start({
+    onUnhandledRequest: "bypass", // Don't warn about unhandled requests
+    serviceWorker: {
+      url: "/mockServiceWorker.js",
+    },
+  });
+
+  // Auto-seed the database if empty
+  const { seedIfEmpty } = await import("./db/init");
+  await seedIfEmpty();
 }
 
 enableMocking().then(() => {

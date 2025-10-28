@@ -82,9 +82,11 @@ function JobDetail() {
             </span>
           )}
         </div>
+
         <div className="job-slug">
           Slug: <code>{slugify(job.title)}</code>
         </div>
+
         {job.skills && job.skills.length > 0 && (
           <div className="job-tags">
             {job.skills.map((s) => (
@@ -101,9 +103,21 @@ function JobDetail() {
         <p>{job.description}</p>
       </div>
 
-      <p>
-        <Link to="/jobs">Back to jobs</Link>
-      </p>
+      <div className="job-extra-info">
+        <div className="job-info-card">
+          <strong>Applicants:</strong> 34
+        </div>
+        <div className="job-info-card">
+          <strong>Openings:</strong> 2
+        </div>
+        <div className="job-info-card">
+          <strong>Last Updated:</strong> 25 Oct 2025
+        </div>
+      </div>
+
+      <div className="job-detail-footer">
+        <Link to="/jobs">Back to Jobs</Link>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./JobCard.css";
 
-function JobCard({ job, onEdit, onArchiveToggle }) {
+function JobCard({ job, onEdit, onArchiveToggle, dragHandleProps }) {
   const isArchived = job.status === "archived";
 
   return (
@@ -14,6 +14,15 @@ function JobCard({ job, onEdit, onArchiveToggle }) {
           <span className={`job-status ${job.status}`}>{job.status}</span>
         </div>
         <div className="job-actions">
+          {/* <button
+            {...(dragHandleProps || {})}
+            className="drag-handle action-button"
+            aria-label="Drag to reorder"
+            type="button"
+            title="Drag to reorder"
+          >
+            ⋮
+          </button> */}
           <button
             onClick={() => onEdit()}
             className="action-button edit-button"
@@ -32,11 +41,25 @@ function JobCard({ job, onEdit, onArchiveToggle }) {
           </button>
         </div>
       </div>
+
       <div className="job-company">{job.company}</div>
       <div className="job-meta">
-        <span className="job-type">{job.type}</span>
-        <span className="job-location">{job.location}</span>
+        <div className="job-desc">
+          <span className="job-type">{job.type}</span>
+          <span className="job-location">{job.location}</span>
+        </div>
+
+        <button
+          {...(dragHandleProps || {})}
+          className="drag-handle action-button"
+          aria-label="Drag to reorder"
+          type="button"
+          title="Drag to reorder"
+        >
+          🖐🏻
+        </button>
       </div>
+
       {job.skills && job.skills.length > 0 && (
         <div className="job-tags">
           {job.skills.map((skill) => (

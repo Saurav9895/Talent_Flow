@@ -1,6 +1,32 @@
-# Getting Started with Create React App
+# TalentFlow
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern ATS (Applicant Tracking System) built with React and IndexedDB.
+
+## Features
+
+- Job posting and management
+- Candidate tracking
+- Assessment creation and management
+- Drag-and-drop interface
+- Offline-capable with IndexedDB
+- Mock API service for development and preview
+
+## Environment Setup
+
+The application uses different environments for data management:
+
+### Development
+
+- Uses MSW (Mock Service Worker) for API mocking
+- IndexedDB with auto-seeding of sample data
+- Hot-reloading enabled
+
+### Production/Preview
+
+- MSW enabled for consistent experience
+- Auto-seeding enabled for demo purposes
+- Data persists in browser's IndexedDB storage
+- Each visitor gets their own isolated database instance
 
 ## Available Scripts
 
