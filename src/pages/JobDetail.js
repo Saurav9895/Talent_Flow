@@ -72,51 +72,53 @@ function JobDetail() {
 
   return (
     <div className="job-detail">
-      <div className="job-detail-header">
-        <h1>{job.title}</h1>
-        <div className="job-meta">
-          <span className={`job-status ${job.status}`}>{job.status}</span>
-          {createdAt && (
-            <span className="job-created">
-              Created: {new Date(createdAt).toLocaleString()}
-            </span>
+      <div className="job-detail-container">
+        <div className="job-detail-header">
+          <h1>{job.title}</h1>
+          <div className="job-meta">
+            <span className={`job-status ${job.status}`}>{job.status}</span>
+            {createdAt && (
+              <span className="job-created">
+                Created: {new Date(createdAt).toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          <div className="job-slug">
+            Slug: <code>{slugify(job.title)}</code>
+          </div>
+
+          {job.skills && job.skills.length > 0 && (
+            <div className="job-tags">
+              {job.skills.map((s) => (
+                <span key={s} className="job-tag">
+                  {s}
+                </span>
+              ))}
+            </div>
           )}
         </div>
 
-        <div className="job-slug">
-          Slug: <code>{slugify(job.title)}</code>
+        <div className="job-description">
+          <h3>Description</h3>
+          <p>{job.description}</p>
         </div>
 
-        {job.skills && job.skills.length > 0 && (
-          <div className="job-tags">
-            {job.skills.map((s) => (
-              <span key={s} className="job-tag">
-                {s}
-              </span>
-            ))}
+        <div className="job-extra-info">
+          <div className="job-info-card">
+            <strong>Applicants:</strong> 34
           </div>
-        )}
-      </div>
-
-      <div className="job-description">
-        <h3>Description</h3>
-        <p>{job.description}</p>
-      </div>
-
-      <div className="job-extra-info">
-        <div className="job-info-card">
-          <strong>Applicants:</strong> 34
+          <div className="job-info-card">
+            <strong>Openings:</strong> 2
+          </div>
+          <div className="job-info-card">
+            <strong>Last Updated:</strong> 25 Oct 2025
+          </div>
         </div>
-        <div className="job-info-card">
-          <strong>Openings:</strong> 2
-        </div>
-        <div className="job-info-card">
-          <strong>Last Updated:</strong> 25 Oct 2025
-        </div>
-      </div>
 
-      <div className="job-detail-footer">
-        <Link to="/jobs">Back to Jobs</Link>
+        <div className="job-detail-footer">
+          <Link to="/jobs">Back to Jobs</Link>
+        </div>
       </div>
     </div>
   );

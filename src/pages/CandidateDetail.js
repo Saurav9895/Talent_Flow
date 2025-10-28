@@ -401,7 +401,6 @@ function CandidateDetail() {
           </Link>
         </div>
 
-        {loading && <div className="loading-message">Loading...</div>}
         {error && <div className="error-message">{error}</div>}
 
         {candidate && (
@@ -426,11 +425,17 @@ function CandidateDetail() {
                       </div>
 
                       <div className="job-actions">
+                        {loading && <div>Loading...</div>}
                         {(Boolean(assessmentExists[String(job.id)]) ||
                           String(job.id) ===
                             String(assignedJobWithAssessment)) &&
                           (Boolean(submittedAssessments[String(job.id)]) ? (
                             <>
+                              {loading && (
+                                <div className="loading-message">
+                                  Loading...
+                                </div>
+                              )}
                               <button className="action-button small" disabled>
                                 Take Assessment
                               </button>
