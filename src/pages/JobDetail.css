@@ -4,7 +4,7 @@
   padding: 2rem 1.5rem;
   margin: 0 auto;
   height: 83vh;
-  overflow-y: auto;
+  overflow-y: auto !important;
   color: #1f2937;
   overflow: hidden;
 }
