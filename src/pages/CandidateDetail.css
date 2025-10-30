@@ -350,3 +350,14 @@
     transform: translateY(0);
   }
 }
+
+@media screen and (max-width: 900px) {
+  .kanban-timeline {
+    flex-direction: column;
+  }
+}
+@media screen and (max-width: 800px) {
+  .kanban-column {
+    min-width: 145px !important;
+  }
+}
