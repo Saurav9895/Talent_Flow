@@ -2,6 +2,10 @@
 
 A modern Applicant Tracking System (ATS) built with React, featuring offline capability and a mock API layer for development and demonstrations.
 
+🖥 **Live Demo:** [https://talentflow-six-chi.vercel.app](https://talentflow-six-chi.vercel.app)
+
+---
+
 ## Features
 
 - Job posting and management
@@ -55,7 +59,6 @@ The application includes an assessments module that allows you to create job-spe
 
    ```bash
    git clone https://github.com/Saurav9895/Talent_Flow.git
-   cd talent-flow
    ```
 
 2. Install dependencies:
@@ -124,7 +127,6 @@ The application includes an assessments module that allows you to create job-spe
 
    ```powershell
    git clone https://github.com/Saurav9895/Talent_Flow.git
-   cd talent-flow
    ```
 
    2. Install dependencies:
